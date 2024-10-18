@@ -120,6 +120,74 @@ class AdsRepository extends IAds {
       throw error;
     }
   }
+
+  async getSchedulingAdvertise () {
+    try {
+      const now = new Date();
+      const startOfDay = new Date();
+      startOfDay.setHours(0, 0, 0, 0);
+      const endOfDay = new Date(startOfDay);
+      endOfDay.setHours(23, 59, 59, 999); // End of the day
+
+      const adList = await AdModel.find({
+        schedule_start: { $gte: startOfDay, $lte: endOfDay }
+      })
+      .sort({ createdAt: -1 })
+      .exec();
+
+      if (now.getHours() === 0 && now.getMinutes() === 0) {
+        // Update status of the ads
+        for (const ad of adList) {
+          ad.status = 'active'; // or whatever status you want to set
+          await ad.save(); // Save the updated ad
+        }
+
+        return adList; // Return the updated ad list if needed
+      }
+
+      return adList;
+    } catch (error) {
+      console.error(ERRORS_ADS_REPOSITORY.SCHEDULLING_ADS, error.message);
+      throw error;
+    }
+  }
+
+  async handleClicks(adId) {
+    const ad = await AdModel.findById(adId);
+    
+     // Update the click count in the ad's result array for today
+    const today = new Date();
+    const todayString = today.toISOString().split('T')[0];
+
+    // Find today's analytics entry
+    const dailyAnalytics = ad.result.find(
+      (analytics) => analytics.date.toISOString().split('T')[0] === todayString
+    );
+
+    if (dailyAnalytics) {
+      // Update the clicks if today's entry exists
+      dailyAnalytics.clicks += 1; // Increment clicks
+      dailyAnalytics.impressions += 1;
+      const { totalCost } = await formula.calculateCost(dailyAnalytics.impressions, dailyAnalytics.clicks, ad.budget)
+      ad.result.cost = totalCost;
+    } else {
+      // Create a new entry for today's date if it doesn't exist
+      ad.result.push({
+        date: today,
+        clicks: 1,
+        impressions: 1,
+        conversions: 0,
+        cost: 0,
+        ctr: 0,
+      });
+
+      const { totalCost } = await formula.calculateCost(ad.result.impressions, ad.result.clicks, ad.budget)
+      ad.result.cost = totalCost;
+    }
+
+    await ad.save(); // Save the updated ad document
+    return ad;
+  }
 }
 
 const adsRepository = new AdsRepository();

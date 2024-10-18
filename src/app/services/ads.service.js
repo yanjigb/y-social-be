@@ -118,6 +118,42 @@ class AdsService extends IAdsService {
       throw new Error(ERRORS.DEFAULT);
     }
   }
+
+  async getSchedulingAdvertise() {
+    try {
+      const result = await adsRepository.getSchedulingAdvertise();
+      return {
+        message: "Successfully",
+        count: result.length,
+        data: result
+      };
+    } catch (error) {
+      console.error(ERROR_ADS_SERVICE.TRENDING_ADS, error);
+      throw new Error(ERRORS.DEFAULT);
+    }
+  }
+  
+  async handleClicks(adId) {
+    try {
+      const result = await adsRepository.handleClicks();
+      
+      if(!result) {
+        return {
+          message: "Update Clicks failed",
+          adId: adId,
+          data: result
+        };
+      }
+      
+      return {
+        message: "Successfully",
+        data: result
+      };
+    } catch (error) {
+      console.error(ERROR_ADS_SERVICE.TRENDING_ADS, error);
+      throw new Error(ERRORS.DEFAULT);
+    }
+  }
 }
 
 const adsService = new AdsService();

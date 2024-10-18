@@ -1,7 +1,7 @@
 const cron = require("node-cron");
-const { adsAnalyticsService } = require("../services/ads-analytics.service");
+const { adsAnalyticsService } = require("../../services/ads-analytics.service");
 const RUN_PER_DAY = "0 0 * * *";
-const ColorConsole = require("./color-console");
+const ColorConsole = require("../color-console");
 
 cron.schedule(RUN_PER_DAY, async () => {
   try {
