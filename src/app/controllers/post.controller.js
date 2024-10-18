@@ -259,13 +259,15 @@ class PostController {
     const { userID } = req.body;
 
     try {
-      const user = await UserModel.findOne({ _id: userID });
+      const user = await UserModel.findById(userID);
 
       const sharedIndex = user.postShared.findIndex(
         (item) => item.postID === postID,
       );
 
       if (sharedIndex === -1) {
+        console.log(223)
+
         // Post is not shared by the user, add it to the shared posts
         user.postShared.push({ postID });
         await user.save();

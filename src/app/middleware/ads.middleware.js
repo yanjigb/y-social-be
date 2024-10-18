@@ -3,6 +3,19 @@ const { adsService } = require("../services/ads.service");
 const adModel = require("../models/ads.model");
 const { MIN_BUDGET } = require("../constants/ads");
 const { ERRORS } = require("../constants/error");
+const { default: rateLimit } = require("express-rate-limit");
+
+const rateLimitImpressions = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 5, // Limit each IP to 5 requests per hour windows
+  message: "Too many requests, please try again later",
+});
+
+const rateLimitClick = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: 5, // Limit each IP to 10 clicks per minute
+  message: "Too many requests, please try again later."
+});
 
 const validateAds = async (req, res, next) => {
   const adId = req.params.id;
@@ -114,4 +127,6 @@ module.exports = {
   validateAdUpdate,
   validateBudget,
   adAuthorization,
+  rateLimitImpressions,
+  rateLimitClick
 };

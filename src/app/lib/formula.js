@@ -40,7 +40,26 @@ class Formula extends IFormula {
     }
   }
 
-  async calculateCost() {}
+  async calculateCost(impressions, clicks, budget) {
+    try {
+      const costPerThousandImpressions = this.calculateCPM(budget, impressions);
+      const costPerClick = this.calculateCPC(budget, clicks);
+      const costFromImpressions = (impressions * costPerThousandImpressions) / 1000;
+      const costFromClicks = clicks * costPerClick;
+      const totalCost = costFromImpressions + costFromClicks;
+
+      return {
+        costPerThousandImpressions,
+        costPerClick,
+        costFromImpressions,
+        costFromClicks,
+        totalCost,
+      };
+    } catch (error) {
+      console.error("Error calculating cost:", error.message);
+      throw error;
+    }
+  }
 
   calculateConversionRate(conversions, clicks) {
     return clicks ? (conversions / clicks) * 100 : 0;
@@ -61,6 +80,16 @@ class Formula extends IFormula {
       console.error("Error calculating total interactions:", error.message);
       throw error;
     }
+  }
+
+  calculateCPM(budget, totalImpressions) {
+    const result = budget / (totalImpressions / 1000);
+    return result;
+  }
+
+  calculateCPC(budget, totalClicks) {
+    const result = budget / totalClicks;
+    return result;
   }
 
   calculateCPA(totalCost, conversions) {

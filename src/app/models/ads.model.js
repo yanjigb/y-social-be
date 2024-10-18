@@ -96,6 +96,10 @@ const adsSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    link_action: {
+      type: String,
+      required: true,
+    },
     status: {
       type: String,
       enum: ["active", "schedule", "disabled"],
